@@ -30,10 +30,6 @@ RUN npm install -g @grpc/grpc-js @grpc/proto-loader js-yaml
 # Fix @hono/node-server authorization bypass (GHSA-wc8c-qw6v-h7f6)
 RUN npm install -g @hono/node-server@1.19.11
 
-# Allow the sandbox user to read the default policy (the startup script
-# copies it to a writable location; this chown covers non-Landlock envs)
-RUN chown -R sandbox:sandbox /etc/openshell
-
 # Stage the NeMoClaw DevX extension source
 COPY nemoclaw-ui-extension/extension/ /opt/nemoclaw-devx/
 
@@ -50,9 +46,9 @@ RUN set -e; \
     cd /opt/nemoclaw-devx && npm install --production; \
     UI_DIR="$(npm root -g)/openclaw/dist/control-ui"; \
     esbuild /opt/nemoclaw-devx/index.ts \
-      --bundle \
-      --format=esm \
-      --outfile="$UI_DIR/assets/nemoclaw-devx.js"; \
+    --bundle \
+    --format=esm \
+    --outfile="$UI_DIR/assets/nemoclaw-devx.js"; \
     HASH=$(md5sum "$UI_DIR/assets/nemoclaw-devx.js" | cut -c1-8); \
     sed -i "s|</head>|<link rel=\"stylesheet\" href=\"./assets/nemoclaw-devx.css?v=${HASH}\">\n</head>|" "$UI_DIR/index.html"; \
     sed -i "s|</head>|<script type=\"module\" src=\"./assets/nemoclaw-devx.js?v=${HASH}\"></script>\n</head>|" "$UI_DIR/index.html"; \
